@@ -2,15 +2,12 @@ using System;
 using UnityEngine;
 
 
-
 [Serializable]
 public struct CubeProperty
 {
     public int number;
     public Material colorMaterial;
 }
-
-
 
 public class CubeGenerator : MonoBehaviour
 {
@@ -52,7 +49,10 @@ public class CubeGenerator : MonoBehaviour
         cube.m_Collider.isTrigger = true;
 
         // Setup the Cube Properties
-        cube.Setup(cubeProperty);
+        cube.Setup(cubeProperty, true);
+
+        // Play Cube Animation (Initialize Player Cube)
+        cube.m_Animator.Play("InitializePlayerCube");
 
         return cubeGO;
     }
@@ -87,6 +87,8 @@ public class CubeGenerator : MonoBehaviour
         cube.m_Rigidbody.AddForce(upForce, ForceMode.Impulse);
         cube.m_Rigidbody.AddTorque(randomTorque, ForceMode.Impulse);
 
+        // Play Cube Animation (Initialize Player Cube)
+        cube.m_Animator.Play("InitializeCube");
 
         return cubeGO;
     }
@@ -99,17 +101,13 @@ public class CubeGenerator : MonoBehaviour
     public CubeProperty GetCubeProperty()
     {
         int numberPower = UnityEngine.Random.Range(1, GameManager.Instance.currMaxPower);
-        Debug.Log("Number Power = " + numberPower);
 
         if ((cubeProperties.Length > 0) && numberPower < cubeProperties.Length - 1)
         {
-            Debug.Log("Teting - 1");
             return cubeProperties[numberPower - 1];
         }
         else
         {
-            Debug.Log("Teting - 2");
-
             return cubeProperties[0];
         }
     }

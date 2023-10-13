@@ -4,27 +4,64 @@ using UnityEngine;
 
 public class Cube : MonoBehaviour
 {
-    [SerializeField] private TextMeshProUGUI[] numberTexts;
+    [SerializeField] private TextMeshProUGUI[] m_NumberTexts;
     [SerializeField] private MeshRenderer m_MeshRenderer;
+    public LineRenderer m_LineRenderer;
+    public TrailRenderer m_TrailRenderer;
     public Collider m_Collider;
     public Rigidbody m_Rigidbody;
+    public Animator m_Animator;
 
     public CubeProperty property;
 
     private bool isCollided = false;
 
+    private bool isLineRendererON = false;
 
-    public void Setup(CubeProperty property)
+
+
+    private void Update()
+    {
+        if (isLineRendererON)
+        {
+            m_LineRenderer.SetPosition(0, transform.position);
+            m_LineRenderer.SetPosition(1, transform.position + transform.forward * 8f);
+        }
+    }
+
+    public void TurnOnLineRenderer()
+    {
+        isLineRendererON = true;
+        m_LineRenderer.enabled = true;
+    }
+    public void TurnOffLineRenderer()
+    {
+        isLineRendererON = false;
+        m_LineRenderer.enabled = false;
+    }
+    public void TurnOnTrailRenderer()
+    {
+        m_TrailRenderer.enabled = true;
+    }
+    public void TurnOffTrailRenderer()
+    {
+        m_TrailRenderer.enabled = false;
+    }
+
+    public void Setup(CubeProperty property,bool isLineRenderer = false)
     {
         this.property = property;
         // Set the Numbers Text
-        foreach (TextMeshProUGUI numberText in numberTexts)
+        foreach (TextMeshProUGUI numberText in m_NumberTexts)
         {
             numberText.text = property.number.ToString();
         }
 
         // Set the Material
         m_MeshRenderer.material = property.colorMaterial;
+
+        if (isLineRenderer)
+            TurnOnLineRenderer();
     }
 
 
@@ -32,6 +69,9 @@ public class Cube : MonoBehaviour
     {
         if (collision.collider.CompareTag("Cube"))
         {
+            // Trun Trail OFF
+            TurnOffTrailRenderer();
+
             // Check if same numbers cube collided
             if (this.property.number == collision.collider.GetComponent<Cube>().property.number && !isCollided)
             {

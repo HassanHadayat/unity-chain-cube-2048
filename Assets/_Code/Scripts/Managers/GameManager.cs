@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -8,6 +9,9 @@ public class GameManager : MonoBehaviour
     
     private void Awake()
     {
+        Time.timeScale = 1f;
+
+
         Application.targetFrameRate = Screen.currentResolution.refreshRate;
         if (Instance != null && Instance != this)
         {
@@ -19,4 +23,9 @@ public class GameManager : MonoBehaviour
         currMaxPower = 1;
     }
 
+
+    public void OnClick_RestartBtn()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
 }

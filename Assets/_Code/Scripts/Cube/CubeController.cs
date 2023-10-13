@@ -10,9 +10,10 @@ public class CubeController : MonoBehaviour
     public float minX;
 
     public float shootForce = 15f;
+    public float horizontalSpeed = 0.3f;
     public Transform dynamicTrans;
 
-    private GameObject cube;
+    public GameObject cube;
     private bool canMoveFinger = true;
     private Touch currTouch;
 
@@ -46,7 +47,7 @@ public class CubeController : MonoBehaviour
                 float deltaX = currTouch.deltaPosition.x;
 
                 // move cube across the horizontal axis
-                cube.transform.position += Vector3.right * deltaX * Time.deltaTime;
+                cube.transform.position += Vector3.right * deltaX * Time.deltaTime * horizontalSpeed;
 
                 // check the horizontal limits of cube
                 if (cube.transform.position.x > maxX)
@@ -82,6 +83,9 @@ public class CubeController : MonoBehaviour
         // Apply Shoot Force
         cubeRb.velocity = Vector3.zero;
         cubeRb.AddForce(Vector3.forward * shootForce, ForceMode.Impulse);
+
+        cube.GetComponent<Cube>().TurnOffLineRenderer();
+        cube.GetComponent <Cube>().TurnOnTrailRenderer();
     }
 
     public void RemoveCubeInHand()
@@ -91,12 +95,19 @@ public class CubeController : MonoBehaviour
             // Move it to DYNAMIC
             cube.transform.parent = dynamicTrans;
 
-            // Get New Cube From Cube Generator
-            cube = null;
-            cube = CubeGenerator.Instance.CreatePlayerCube(transform);
 
             // Resume Finger Movement
-            canMoveFinger = true;
+            Invoke("DelayCanMoveFinger", .4f);
         }
+    }
+
+    public void DelayCanMoveFinger()
+    {
+        // Get New Cube From Cube Generator
+        cube = null;
+        cube = CubeGenerator.Instance.CreatePlayerCube(transform);
+
+        canMoveFinger = true;
+
     }
 }
