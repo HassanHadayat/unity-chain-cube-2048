@@ -547,6 +547,8 @@ MonoBehaviour:
   - {fileID: 8341805846325194457}
   - {fileID: 392502395383619482}
   m_MeshRenderer: {fileID: 5365878601411794091}
+  m_Collider: {fileID: 6752861258655434796}
+  m_Rigidbody: {fileID: 6752861258655434795}
   property:
     number: 0
     colorMaterial: {fileID: 0}

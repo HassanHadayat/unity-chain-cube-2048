@@ -14,6 +14,8 @@ public class GameManager : MonoBehaviour
             Destroy(this.gameObject);
         }
         Instance = this;
+
+        // Set the initial cube number power
         currMaxPower = 1;
     }
 

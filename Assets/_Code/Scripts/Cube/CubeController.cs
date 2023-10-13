@@ -6,17 +6,16 @@ public class CubeController : MonoBehaviour
 {
     public static CubeController Instance;
 
-    [SerializeField] private GameObject cubePrefab;
-
-    public GameObject cube;
-    public GameObject prevCube;
     public float maxX;
     public float minX;
 
-    Touch currTouch;
-    public bool canMove = true;
-    public bool isInstantiating = false;
-    public Transform dynamic;
+    public float shootForce = 15f;
+    public Transform dynamicTrans;
+
+    private GameObject cube;
+    private bool canMoveFinger = true;
+    private Touch currTouch;
+
 
     private void Awake()
     {
@@ -26,15 +25,16 @@ public class CubeController : MonoBehaviour
         }
         Instance = this;
     }
+    
     private void Start()
     {
-        cube = Instantiate(cubePrefab, transform);
-        cube.GetComponent<Cube>().Setup();
+        // Initial Cube
+        cube = CubeGenerator.Instance.CreatePlayerCube(transform);
     }
 
     private void Update()
     {
-        if (Input.touchCount > 0 && canMove && cube)
+        if (Input.touchCount > 0 && canMoveFinger && cube)
         {
             // Get Touch
             currTouch = Input.GetTouch(0);
@@ -42,11 +42,13 @@ public class CubeController : MonoBehaviour
             // If touch Move
             if (currTouch.phase == TouchPhase.Moved)
             {
-                // move cube across the horizontal axis
+                // get the finger moved distance
                 float deltaX = currTouch.deltaPosition.x;
 
+                // move cube across the horizontal axis
                 cube.transform.position += Vector3.right * deltaX * Time.deltaTime;
 
+                // check the horizontal limits of cube
                 if (cube.transform.position.x > maxX)
                 {
                     Vector3 newPos = cube.transform.position;
@@ -59,49 +61,42 @@ public class CubeController : MonoBehaviour
                     newPos.x = minX;
                     cube.transform.position = newPos;
                 }
+
             }
             else if (currTouch.phase == TouchPhase.Ended)
             {
-                canMove = false;
+                // Stop Finger Movement
+                canMoveFinger = false;
 
-                Rigidbody cubeRb = cube.GetComponent<Rigidbody>();
-                cubeRb.useGravity = false;
-                cubeRb.velocity = Vector3.zero;
-                cubeRb.AddForce(Vector3.forward * 10, ForceMode.Impulse);
-
-                Invoke("ExcludeCube", 0.7f);
+                // Shoot the Cube in Hand
+                ShootCube();
             }
         }
     }
 
-    public void ExcludeCube()
+    public void ShootCube()
+    {
+        // Get the Rigidbody
+        Rigidbody cubeRb = cube.GetComponent<Rigidbody>();
+
+        // Apply Shoot Force
+        cubeRb.velocity = Vector3.zero;
+        cubeRb.AddForce(Vector3.forward * shootForce, ForceMode.Impulse);
+    }
+
+    public void RemoveCubeInHand()
     {
         if (cube)
         {
-            cube.GetComponent<Rigidbody>().useGravity = true;
-            cube.transform.parent = dynamic;
+            // Move it to DYNAMIC
+            cube.transform.parent = dynamicTrans;
+
+            // Get New Cube From Cube Generator
             cube = null;
+            cube = CubeGenerator.Instance.CreatePlayerCube(transform);
+
+            // Resume Finger Movement
+            canMoveFinger = true;
         }
-        canMove = true;
-        cube = Instantiate(cubePrefab, transform);
-        cube.GetComponent<Cube>().Setup();
-    }
-    public static int check = 0;
-    public void InstantiateCube(Vector3 position, int numberPower)
-    {
-        if (!isInstantiating)
-        {
-            isInstantiating = true;
-            Debug.Log(Time.realtimeSinceStartup.ToString());
-            GameObject cubeGO = Instantiate(cubePrefab, position, Quaternion.identity, dynamic);
-            cubeGO.GetComponent<Cube>().Setup(numberPower);
-
-            cubeGO.GetComponent<Rigidbody>().AddForce(Vector3.up * (1.25f * numberPower), ForceMode.Impulse);
-            Vector3 randomTorque = UnityEngine.Random.insideUnitSphere * .25f;
-            cubeGO.GetComponent<Rigidbody>().AddTorque(randomTorque, ForceMode.Impulse);
-
-            isInstantiating = false;
-        }
-
     }
 }
