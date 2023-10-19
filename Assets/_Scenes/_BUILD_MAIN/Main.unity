@@ -1849,6 +1849,8 @@ MonoBehaviour:
   instantiateEffectUpForce: 1.25
   instantiateEffectRotateForce: 0.25
   dynamicTrans: {fileID: 1057521420}
+  minUpForce: 5
+  maxUpForce: 7
 --- !u!1 &1945297365
 GameObject:
   m_ObjectHideFlags: 0

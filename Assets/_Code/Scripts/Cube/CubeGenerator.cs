@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 
@@ -19,6 +21,10 @@ public class CubeGenerator : MonoBehaviour
     [SerializeField] private float instantiateEffectUpForce = 1.25f;
     [SerializeField] private float instantiateEffectRotateForce = 0.25f;
     [SerializeField] private Transform dynamicTrans;
+
+    private  Dictionary<int, List<GameObject>> numberCubes = new Dictionary<int, List<GameObject>>();
+    public float minUpForce = 5f;
+    public float maxUpForce = 7f;
 
     private void Awake()
     {
@@ -57,7 +63,7 @@ public class CubeGenerator : MonoBehaviour
         return cubeGO;
     }
 
-    public GameObject CreateCube(Vector3 instantiatePos, int numberPower)
+    public void CreateCube(Vector3 instantiatePos, int numberPower)
     {
         // Get Cube Property
         CubeProperty cubeProperty = GetCubeProperty(numberPower);
@@ -79,18 +85,33 @@ public class CubeGenerator : MonoBehaviour
         // Setup the Cube Properties
         cube.Setup(cubeProperty);
 
-        
+
+        Vector3 forceDir = Vector3.up * Mathf.Clamp((instantiateEffectUpForce * numberPower), minUpForce, maxUpForce);
+        cube.m_Rigidbody.AddForce(forceDir, ForceMode.Impulse);
+        // IF THIS CUBE NUMBERS CUBE ALREADY IN LIST
+        // -> ADD FORCE IN THAT CUBE DIRECTION
+        if (numberCubes.ContainsKey(cubeProperty.number) && numberCubes[cubeProperty.number].Count > 0)
+        {
+            Vector3 dir = GetClosestCubeDirection(cubeGO, cubeProperty.number);
+            dir.y = 0.5f;
+            forceDir = dir;
+            //forceDir = dir * (instantiateEffectUpForce * numberPower);
+            cube.m_Rigidbody.AddForce(forceDir, ForceMode.Impulse);
+        }
+
+
         // Apply Instantiate Effect (Upward Force & Rotate)
-        Vector3 upForce = Vector3.up * (instantiateEffectUpForce * numberPower);
+        //Vector3 forceDir = Vector3.up * (instantiateEffectUpForce * numberPower);
         Vector3 randomTorque = UnityEngine.Random.insideUnitSphere * instantiateEffectRotateForce;
 
-        cube.m_Rigidbody.AddForce(upForce, ForceMode.Impulse);
+        //cube.m_Rigidbody.AddForce(forceDir, ForceMode.Impulse);
         cube.m_Rigidbody.AddTorque(randomTorque, ForceMode.Impulse);
 
         // Play Cube Animation (Initialize Player Cube)
         cube.m_Animator.Play("InitializeCube");
 
-        return cubeGO;
+        AddCube(cubeProperty.number, cubeGO);
+
     }
 
 
@@ -126,4 +147,45 @@ public class CubeGenerator : MonoBehaviour
             return cubeProperties[0];
     }
 
+    //xxxxxxxxxxxxxxxxxxxxxx Number Cubes Functions xxxxxxxxxxxxxxxxxxxxxxx
+    public void AddCube(int number, GameObject cube)
+    {
+        Debug.Log("Cube Added !");
+        if (numberCubes.ContainsKey(number))
+        {
+            // Key exists in the dictionary.
+            numberCubes[number].Add(cube);
+        }
+        else
+        {
+            numberCubes.Add(number, new List<GameObject>() { cube });
+        }
+    }
+    public void RemoveCube(int number, GameObject cube)
+    {
+        Debug.Log("Cube Removed !");
+        if (numberCubes.ContainsKey(number))
+        {
+            // Key exists in the dictionary.
+            numberCubes[number].Remove(cube);
+            Destroy(cube);
+        }
+    }
+    public Vector3 GetClosestCubeDirection(GameObject thisCube, int number)
+    {
+        Debug.Log("Finding GetClosestCubeDirection");
+        (float dist, GameObject cube) minData = new(int.MaxValue, thisCube);
+
+        if (numberCubes.ContainsKey(number))
+        {
+            foreach (GameObject cube in numberCubes[number])
+            {
+                if (Vector3.Distance(thisCube.transform.position, cube.transform.position) < minData.dist)
+                {
+                    minData = (Vector3.Distance(thisCube.transform.position, cube.transform.position), cube);
+                }
+            }
+        }
+        return (minData.cube.transform.position - thisCube.transform.position);
+    }
 }

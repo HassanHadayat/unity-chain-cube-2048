@@ -48,7 +48,7 @@ public class Cube : MonoBehaviour
         m_TrailRenderer.enabled = false;
     }
 
-    public void Setup(CubeProperty property,bool isLineRenderer = false)
+    public void Setup(CubeProperty property, bool isLineRenderer = false)
     {
         this.property = property;
         // Set the Numbers Text
@@ -88,9 +88,9 @@ public class Cube : MonoBehaviour
                     // Ask Generator to Generate new Cube
                     CubeGenerator.Instance.CreateCube(newInstantiatePos, newNumberPower);
 
-                    // Destroy Collided Cubes
-                    Destroy(this.gameObject);
-                    Destroy(collision.gameObject);
+                    // Remove Collided Cubes from Number Cubes List
+                    CubeGenerator.Instance.RemoveCube(property.number, this.gameObject);
+                    CubeGenerator.Instance.RemoveCube(collision.collider.GetComponent<Cube>().property.number, collision.gameObject);
                 }
 
             }
@@ -116,6 +116,9 @@ public class Cube : MonoBehaviour
 
                 // Remove the reference from Cube Controller
                 CubeController.Instance.RemoveCubeInHand();
+
+                // Add Cube to the Number Cubes List
+                CubeGenerator.Instance.AddCube(property.number, this.gameObject);
             }
             // Cube Trigger the Finish Line
             else if (this.CompareTag("Cube"))
